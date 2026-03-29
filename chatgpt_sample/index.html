@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ellabot – ChatGPT Style</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+    }
+
+    .app {
+      display: flex;
+      height: 100%;
+      overfow : hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background-color: #afafb6;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      flex-shrink:0 ;
+      overflow-y: auto;
+      /* box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1) !important; */
+      /* border-right: 1px solid rgba(255,255,255,0.2) !important; */
+
+
+    }
+
+    .sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      background-color: #afafb6;
+    }
+
+    .new-chat-btn {
+      background-color: #2e243d;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .history {
+      flex-grow: 1;
+      overflow-y: auto;
+      background-color: gainsboro;
+      padding: 10px;
+      margin-bottom: 40px;
+      border-radius: 6px;
+    }
+
+    .history-item {
+      background-color: #2a2a2b;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .history-item:hover {
+      background-color: #505058;
+    }
+
+    /* Chat area */
+    .chat-area {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      background: white;
+      min-width: 0;
+      border-bottom-left-radius: 0;
+  
+      
+    }
+
+    .chat-header {
+      background-color: #0e0d12 !important;
+      color: white;
+      padding: 20px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .chat-box {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .message {
+      position: relative;
+      display: inline-block;
+      max-width: 75%;
+      padding: 12px 16px;
+      border-radius: 20px;
+      font-size: 16px;
+      line-height: 1.4;
+      word-wrap: break-word;
+      transition: background 0.2s;
+    }
+
+    .user {
+      align-self: flex-end;
+      background-color: #0b93f6;
+      color: white;
+      border-bottom-right-radius: 0;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background-color: #e5e5ea;
+      color: black;
+      border-bottom-left-radius: 0;
+    }
+
+    .msg-tools {
+      display: none;
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      gap: 6px;
+    }
+
+    .message.active .msg-tools {
+      display: flex;
+    }
+
+    .msg-tools button {
+      background: #f4f4f4;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      padding: 3px 6px;
+      cursor: pointer;
+      color: #333;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .msg-tools button:hover {
+      background-color: #e0e0e0;
+      transform: scale(1.05);
+    }
+
+    .input-area {
+      display: flex;
+      padding: 15px;
+      border-top: 1px solid #ccc;
+      gap: 10px;
+    }
+
+    .input-area input {
+      flex-grow: 1;
+      padding: 12px;
+      border-radius: 25px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .input-area button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 25px;
+      background-color: #0a080c;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .input-area button:hover {
+      background-color: #030206;
+    }
+ .chat-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #4a00e0;
+  color: white;
+  padding: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  justify-content: space-between;
+}
+
+.chat-header .logo {
+  height: 32px;
+  width: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.clear-btn {
+  background-color: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.clear-btn:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  transform: scale(1.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+
+
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
+    <h2>Chat History</h2>
+    <div class="history" id="chat-history"></div>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="chat-area">
+    <div class="chat-header">
+        <img src="logo.png" alt="Ellabot Logo" class="logo">
+        <span>Ellabot</span>
+        <button class="clear-btn" onclick="clearCurrentChat()" title="Clear Chat">✖</button>
+
+      </div>
+      
+    <div id="chat-box" class="chat-box"></div>
+    <div class="input-area">
+      <input type="text" id="user-input" placeholder="Type your message...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const historyDiv = document.getElementById("chat-history");
+  const chatBox = document.getElementById("chat-box");
+
+  function loadChatFromStorage(index) {
+    const savedChats = JSON.parse(localStorage.getItem("savedChats") || "[]");
+    const chat = savedChats[index];
+    if (chat) {
+      chatBox.innerHTML = chat;
+    }
+  }
+
+  function updateHistoryList() {
+    historyDiv.innerHTML = "";
+    const savedChats = JSON.parse(localStorage.getItem("savedChats") || "[]");
+    savedChats.forEach((_, index) => {
+      const item = document.createElement("div");
+      item.className = "history-item";
+      item.textContent = "Chat " + (index + 1);
+      item.onclick = () => loadChatFromStorage(index);
+      historyDiv.appendChild(item);
+    });
+  }
+
+  function saveCurrentChat() {
+    const savedChats = JSON.parse(localStorage.getItem("savedChats") || "[]");
+    savedChats.push(chatBox.innerHTML);
+    localStorage.setItem("savedChats", JSON.stringify(savedChats));
+    updateHistoryList();
+  }
+
+  function newChat() {
+    if (chatBox.innerHTML.trim()) saveCurrentChat();
+    chatBox.innerHTML = "";
+  }
+
+  async function sendMessage() {
+    const userInput = document.getElementById("user-input").value.trim();
+    if (!userInput) return;
+
+    chatBox.innerHTML += `
+      <div class="message user" onclick="toggleTools(this)">
+        <span class="msg-text">You: ${userInput}</span>
+        <div class="msg-tools">
+          <button onclick="copyMessage(event, this)" title="Copy">📋</button>
+          <button onclick="deleteMessage(event, this)" title="Delete">🗑️</button>
+        </div>
+      </div>`;
+    document.getElementById("user-input").value = "";
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    const loadingId = "loading-" + Date.now();
+    chatBox.innerHTML += `
+      <div class="message bot" id="${loadingId}" onclick="toggleTools(this)">
+        <span class="msg-text">Ellabot is typing...</span>
+        <div class="msg-tools">
+          <button onclick="copyMessage(event, this)" title="Copy">📋</button>
+          <button onclick="deleteMessage(event, this)" title="Delete">🗑️</button>
+        </div>
+      </div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userInput })
+      });
+
+      const data = await response.json();
+      document.getElementById(loadingId).querySelector('.msg-text').textContent = "Ellabot: " + data.reply.trim();
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+    } catch (error) {
+      document.getElementById(loadingId).querySelector('.msg-text').textContent = "Ellabot: Sorry, couldn't connect.";
+      console.error(error);
+    }
+  }
+
+  function toggleTools(messageEl) {
+    document.querySelectorAll('.message').forEach(el => {
+      if (el !== messageEl) el.classList.remove('active');
+    });
+    messageEl.classList.toggle('active');
+  }
+
+  function copyMessage(event, button) {
+    event.stopPropagation();
+    const msgText = button.closest('.message').querySelector('.msg-text').textContent;
+    navigator.clipboard.writeText(msgText);
+  }
+
+  function deleteMessage(event, button) {
+    event.stopPropagation();
+    button.closest('.message').remove();
+  }
+
+  // Auto-load latest chat (optional)
+  window.addEventListener("DOMContentLoaded", () => {
+    updateHistoryList();
+    const savedChats = JSON.parse(localStorage.getItem("savedChats") || "[]");
+    if (savedChats.length > 0) {
+      chatBox.innerHTML = savedChats[savedChats.length - 1];
+    }
+  });
+  function clearCurrentChat() {
+  if (confirm("Clear this conversation?")) {
+    chatBox.innerHTML = "";
+
+    // Remove latest chat from storage
+    const savedChats = JSON.parse(localStorage.getItem("savedChats") || "[]");
+    if (savedChats.length > 0) {
+      savedChats.pop();
+      localStorage.setItem("savedChats", JSON.stringify(savedChats));
+      updateHistoryList();
+    }
+  }
+}
+
+</script>
+
+</body>
+</html>
